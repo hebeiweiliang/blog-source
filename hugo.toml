@@ -1,12 +1,58 @@
-baseURL = 'https://github.io' # 暂时先写这个，后面买了域名再改
+# 1. 基础设置
+# 注意：如果你部署在 <用户名>.github.io/<项目名>/，结尾必须带斜杠 /
+baseURL = 'https://hebeiweiliang.github.io/blog-source/'
 languageCode = 'zh-cn'
 title = 'InfiniteWei 的技术实验室'
 theme = 'PaperMod'
 
-[params]
-  defaultTheme = 'auto'
-  # 开启搜索功能（PaperMod 特性）
-  ShowCodeCopyButtons = true
-
+# 2. 核心输出设置 (用于搜索功能)
 [outputs]
-  home = ["HTML", "RSS", "JSON"] # 开启 JSON 输出用于搜索
+    home = ["HTML", "RSS", "JSON"]
+
+# 3. 参数配置 (PaperMod 专有特性)
+[params]
+    # 基础样式
+    defaultTheme = 'auto'    # 自动切换深色/浅色模式
+    ShowCodeCopyButtons = true # 显示代码复制按钮
+    ShowReadingTime = true    # 显示阅读时间
+    ShowToc = true            # 显示文章目录
+    
+    # --- 首页欢迎词 (Home Info Mode) ---
+    [params.homeInfoParams]
+        Title = "👋 欢迎来到我的技术实验室"
+        Content = "记录技术成长，分享生活思考。既然来了，就随便看看吧。"
+
+    # --- 搜索功能配置 (Fuse.js) ---
+    # PaperMod 内置搜索，需要配合上面的 JSON 输出
+    [params.fuseConfig]
+        shouldSort = true
+        location = 0
+        distance = 100
+        threshold = 0.4
+        minMatchCharLength = 0
+        keys = ["title", "permalink", "summary", "content"]
+
+    # --- 导航栏配置 ---
+[[menu.main]]
+    identifier = "posts"
+    name = "文章"
+    url = "posts"
+    weight = 10
+
+[[menu.main]]
+    identifier = "archives"
+    name = "归档"
+    url = "archives"
+    weight = 20
+
+[[menu.main]]
+    identifier = "search"
+    name = "搜索"
+    url = "search"
+    weight = 30
+
+[[menu.main]]
+    identifier = "tags"
+    name = "标签"
+    url = "tags"
+    weight = 40
