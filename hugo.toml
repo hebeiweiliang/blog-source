@@ -1,0 +1,12 @@
+baseURL = 'https://github.io' # 暂时先写这个，后面买了域名再改
+languageCode = 'zh-cn'
+title = 'InfiniteWei 的技术实验室'
+theme = 'PaperMod'
+
+[params]
+  defaultTheme = 'auto'
+  # 开启搜索功能（PaperMod 特性）
+  ShowCodeCopyButtons = true
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"] # 开启 JSON 输出用于搜索
