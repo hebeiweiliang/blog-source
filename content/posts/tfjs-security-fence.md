@@ -8,7 +8,7 @@ categories: ["AI实战 Lab"]
 author: "InfiniteWei"
 description: "家里有闲置的旧手机或笔记本？别卖废品！本文教你使用 TensorFlow.js 和 COCO-SSD 模型，3分钟将其变身为具备“电子围栏”功能的智能安防摄像头。纯前端运行，数据隐私 100% 安全。"
 cover:
-    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop" # 建议换成你自己的运行截图
+    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop"
     alt: "AI Security System"
     caption: "纯前端实现的 AI 监控"
 ---
@@ -29,7 +29,7 @@ cover:
     <h3>🚧 AI 电子围栏实验室</h3>
     <p>当前模型：COCO-SSD (Lite)</p>
     <br/>
-    <a href="/apps/fence/" target="_blank" style="background: #007bff; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <a href="/apps/fence/index.html" target="_blank" style="background: #007bff; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-block;">
         👉 点击全屏运行 AI 电子围栏
     </a>
     <p style="font-size: 12px; color: #666; margin-top: 10px;">检测到 "Person" 进入红框区域将触发红色警报</p>
@@ -47,7 +47,7 @@ cover:
 
 ### 核心逻辑图解
 
-```mermaid
+<div class="mermaid">
 graph LR
     A[摄像头流 WebCam] --> B(视频帧 Frame);
     B --> C{COCO-SSD 模型};
@@ -55,8 +55,9 @@ graph LR
     D --> E{逻辑判断};
     E -->|物体坐标 ∈ 围栏区域| F[🚨 触发报警];
     E -->|物体在区域外| G[安全监控中];
-
-```
+    style F fill:#f96,stroke:#333,stroke-width:2px
+    style G fill:#bbf,stroke:#333,stroke-width:2px
+</div>
 
 ## 💻 核心代码实现
 
@@ -146,8 +147,12 @@ model.detect(video).then(predictions => {
 **如果你觉得这个项目有趣，欢迎收藏本站！**
 下一期，我将教大家如何把这个检测结果通过 WebHook 对接到飞书/钉钉机器人，实现真正的远程推送。
 
-<div style="margin-top:50px; text-align:center; color:#ccc;">
-(AdSense 广告位加载中...)
+<div style="margin-top:50px; padding: 20px; background: #fafafa; border: 1px solid #eee; text-align:center; color:#999;">
+(AdSense 广告位 - 建议上线后在此处插入代码)
 </div>
 
+<script src="https://www.google.com/search?q=https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 
+<script>
+mermaid.initialize({ startOnLoad: true });
+</script>
