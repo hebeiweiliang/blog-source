@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<!-- saved from url=(0064)file:///Users/weiliang/baby-fence-project/baby_fence_app_v1.html -->
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电子围栏应用</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="./saved_resource"></script>
+    <!-- 引入 TensorFlow.js 和 COCO-SSD 模型库 -->
+    <script src="./tf.min.js"></script>
+    <script src="./coco-ssd.min.js"></script>
+    <style>
+        /* 使用 Inter 字体并确保 Canvas 居中 */
+        body { font-family: 'Inter', sans-serif; }
+        .canvas-container {
+            position: relative;
+            max-width: 100%;
+            height: auto;
+            margin: 0 auto;
+        }
+        #video, #canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-width: 800px;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        #video {
+            /* 隐藏视频，只显示 Canvas */
+            position: absolute;
+            opacity: 0;
+        }
+        #canvas {
+            z-index: 10;
+            position: relative;
+        }
+        /* 警报闪烁动画 */
+        .alert-flash {
+            animation: flash 0.5s infinite alternate;
+        }
+        @keyframes flash {
+            from { background-color: #f87171; } /* red-400 */
+            to { background-color: #dc2626; } /* red-700 */
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.mx-auto{margin-left:auto;margin-right:auto}.-ml-1{margin-left:-0.25rem}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mr-3{margin-right:0.75rem}.mt-4{margin-top:1rem}.inline-block{display:inline-block}.flex{display:flex}.hidden{display:none}.h-5{height:1.25rem}.min-h-screen{min-height:100vh}.w-5{width:1.25rem}.max-w-4xl{max-width:56rem}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-center{justify-content:center}.gap-4{gap:1rem}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.bg-indigo-600{--tw-bg-opacity:1;background-color:rgb(79 70 229 / var(--tw-bg-opacity, 1))}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.p-4{padding:1rem}.p-2{padding:0.5rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.text-center{text-align:center}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235 / var(--tw-text-opacity, 1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55 / var(--tw-text-opacity, 1))}.text-green-600{--tw-text-opacity:1;color:rgb(22 163 74 / var(--tw-text-opacity, 1))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229 / var(--tw-text-opacity, 1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.opacity-0{opacity:0}.opacity-25{opacity:0.25}.opacity-75{opacity:0.75}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-150{transition-duration:150ms}.duration-300{transition-duration:300ms}.ease-in-out{transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1)}.hover\:bg-indigo-700:hover{--tw-bg-opacity:1;background-color:rgb(67 56 202 / var(--tw-bg-opacity, 1))}.disabled\:bg-indigo-400:disabled{--tw-bg-opacity:1;background-color:rgb(129 140 248 / var(--tw-bg-opacity, 1))}@media (min-width: 768px){.md\:flex-row{flex-direction:row}.md\:p-8{padding:2rem}}</style></head>
+<body class="bg-gray-100 min-h-screen p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">宝宝看护电子围栏</h1>
+        <p id="status-message" class="text-lg text-center mb-4 text-gray-600"><span class="font-semibold text-green-600">状态: 安全。宝宝在围栏内。</span></p>
+
+        <div class="flex flex-col md:flex-row justify-center items-center gap-4 mb-6">
+            <button id="startButton" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-150 ease-in-out disabled:bg-indigo-400" disabled="">
+                启动摄像头
+            </button>
+            <div id="loadingIndicator" class="text-indigo-600 font-medium hidden">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-600 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                模型加载中...
+            </div>
+        </div>
+
+        <!-- 主视频和 Canvas 区域 -->
+        <div class="canvas-container relative bg-white p-2 rounded-xl shadow-2xl" style="width: 640px; height: 480px;">
+            <video id="video" playsinline="" muted=""></video>
+            <canvas id="canvas" width="640" height="480"></canvas>
+            <div id="warningBox" class="absolute inset-0 bg-red-500 opacity-0 pointer-events-none transition-opacity duration-300 rounded-xl"></div>
+        </div>
+        
+        <div class="mt-4 p-4 bg-white rounded-xl shadow-md">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">说明</h3>
+            <ul class="list-disc list-inside text-gray-600 space-y-1">
+                <li><strong class="text-green-600">绿色矩形</strong>: 电子围栏安全区。</li>
+                <li><strong class="text-blue-600">蓝色框</strong>: 检测到的“人”（通常是宝宝）的位置。</li>
+                <li>当“人”离开绿色安全区，状态栏将变为<strong class="text-red-600">警报</strong>，屏幕会闪烁红色。</li>
+                <li>**调试提示**：如果警报未触发，请打开浏览器的开发者工具（F12），查看**控制台 (Console)** 中是否有 `[ALERT HIT]` 日志。</li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        // Global variables
+        let model = null;
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let startButton = document.getElementById('startButton');
+        let loadingIndicator = document.getElementById('loadingIndicator');
+        let statusMessage = document.getElementById('status-message');
+        let warningBox = document.getElementById('warningBox');
+        
+        // Configuration
+        const TARGET_CLASS = 'person'; // We monitor 'person' which is the closest for a baby
+        const CONFIDENCE_THRESHOLD = 0.6;
+        
+        // The fence is defined as a percentage of the canvas width/height
+        // Example: The safe zone is 60% of the center area.
+        const FENCE_SIZE_PCT = 0.6; 
+        
+        // --- Utility Functions ---
+
+        // Function to draw text with a black outline for better visibility
+        function drawText(text, x, y, color = 'white', fontSize = 16) {
+            ctx.font = `${fontSize}px Arial`;
+            // Draw background stroke for visibility
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 3;
+            ctx.strokeText(text, x, y);
+            // Draw main text
+            ctx.fillStyle = color;
+            ctx.fillText(text, x, y);
+        }
+
+        // Exponential backoff retry logic for Fetch API (e.g., model loading)
+        async function fetchWithRetry(fn, retries = 5, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    return await fn();
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                }
+            }
+        }
+
+        // --- Core Logic ---
+
+        // 1. Load the Model
+        async function loadModel() {
+            try {
+                statusMessage.innerHTML = '<span class="font-semibold text-blue-600">状态: 模型加载中... 请稍候</span>';
+                loadingIndicator.classList.remove('hidden');
+                
+                // Use a try-catch with retry for reliable model loading
+                model = await fetchWithRetry(() => cocoSsd.load());
+
+                statusMessage.innerHTML = '<span class="font-semibold text-green-600">状态: 模型加载完毕。点击“启动摄像头”</span>';
+                startButton.disabled = false;
+                loadingIndicator.classList.add('hidden');
+            } catch (error) {
+                console.error("模型加载失败:", error);
+                statusMessage.innerHTML = '<span class="font-semibold text-red-600">错误: 模型加载失败。请检查网络。</span>';
+            }
+        }
+
+        // 2. Start Camera Stream
+        async function startCamera() {
+            if (model === null) {
+                statusMessage.innerHTML = '<span class="font-semibold text-red-600">错误: 模型未加载。</span>';
+                return;
+            }
+            
+            try {
+                startButton.disabled = true;
+                statusMessage.innerHTML = '<span class="font-semibold text-blue-600">状态: 正在请求摄像头权限...</span>';
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user' // Front camera for monitoring
+                    } 
+                });
+                
+                video.srcObject = stream;
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        resolve(video);
+                    };
+                });
+
+                // Set canvas dimensions to match the video stream
+                const { videoWidth, videoHeight } = video;
+                canvas.width = videoWidth;
+                canvas.height = videoHeight;
+                
+                // Set the canvas container to the video dimensions for proper layout
+                const container = document.querySelector('.canvas-container');
+                container.style.width = `${videoWidth}px`;
+                container.style.height = `${videoHeight}px`;
+
+                video.play();
+                statusMessage.innerHTML = '<span class="font-semibold text-green-600">状态: 摄像头启动成功。开始监测...</span>';
+                startDetection();
+            } catch (err) {
+                console.error("无法访问摄像头: ", err);
+                statusMessage.innerHTML = '<span class="font-semibold text-red-600">错误: 无法访问摄像头。请授予权限。</span>';
+                startButton.disabled = false;
+            }
+        }
+        
+        // 3. Main Detection Loop
+        function startDetection() {
+            let isAlerting = false;
+            
+            async function detectFrame() {
+                if (video.readyState === video.HAVE_ENOUGH_DATA && model) {
+                    try {
+                        // 1. Run detection
+                        const predictions = await model.detect(video);
+                        
+                        // Clear canvas before drawing
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        
+                        // Draw the video frame onto the canvas
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        
+                        // 2. Define and draw the Electronic Fence
+                        const fenceWidth = canvas.width * FENCE_SIZE_PCT;
+                        const fenceHeight = canvas.height * FENCE_SIZE_PCT;
+                        const fenceX = (canvas.width - fenceWidth) / 2;
+                        const fenceY = (canvas.height - fenceHeight) / 2;
+                        const fenceEndX = fenceX + fenceWidth; // 围栏结束 X 坐标
+                        const fenceEndY = fenceY + fenceHeight; // 围栏结束 Y 坐标
+
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#10B981'; // emerald-500 (Green)
+                        ctx.lineWidth = 4;
+                        ctx.rect(fenceX, fenceY, fenceWidth, fenceHeight);
+                        ctx.stroke();
+
+                        // 3. Check Fence
+                        let personInDanger = false;
+                        
+                        // Find all 'person' detections above threshold
+                        const personDetections = predictions.filter(p => 
+                            p.class === TARGET_CLASS && p.score >= CONFIDENCE_THRESHOLD
+                        );
+                        
+                        // Check if any person is outside the fence
+                        for (const p of personDetections) {
+                            const [x, y, width, height] = p.bbox;
+                            
+                            // Calculate the centroid of the detected object (中心点)
+                            const centroidX = x + width / 2;
+                            const centroidY = y + height / 2;
+
+                            // Check if centroid is outside the fence boundaries
+                            const isOutside = (
+                                centroidX < fenceX || 
+                                centroidX > fenceEndX || 
+                                centroidY < fenceY || 
+                                centroidY > fenceEndY
+                            );
+
+                            if (isOutside) {
+                                personInDanger = true;
+                                // --- 调试信息: 如果触发警报，会在控制台打印 ---
+                                console.log(`[ALERT HIT] Person centroid outside fence! Centroid: (${centroidX.toFixed(0)}, ${centroidY.toFixed(0)}) Fence Bounds: X:${fenceX.toFixed(0)}-${fenceEndX.toFixed(0)}, Y:${fenceY.toFixed(0)}-${fenceEndY.toFixed(0)}`);
+                                // ---------------------------------------------------
+                            }
+
+                            // 4. Draw Bounding Box and Label
+                            ctx.beginPath();
+                            ctx.strokeStyle = isOutside ? '#EF4444' : '#3B82F6'; // Red or Blue
+                            ctx.lineWidth = 3;
+                            ctx.rect(x, y, width, height);
+                            ctx.stroke();
+
+                            // Calculate label position (always above the box, or slightly inside if too close to top)
+                            const labelX = x;
+                            // Ensure the label text is visible, not cut off by the top edge (20px is text height + padding)
+                            const labelY = y > 20 ? y - 20 : y + 5; 
+                            
+                            const textToDraw = `${p.class} (${(p.score * 100).toFixed(1)}%)`;
+                            const textWidth = ctx.measureText(textToDraw).width;
+
+                            // Draw the label background
+                            ctx.fillStyle = isOutside ? '#EF4444' : '#3B82F6';
+                            ctx.fillRect(labelX, labelY, textWidth + 8, 20);
+
+                            // Draw the label text (Y + 15 to vertically center the text in the 20px background)
+                            drawText(textToDraw, labelX + 4, labelY + 15);
+                        }
+                        
+                        // 5. Update Status and Alert UI - Consolidated logic
+                        if (personInDanger) {
+                            if (!isAlerting) {
+                                // Start alert
+                                statusMessage.innerHTML = '<span class="font-bold text-white bg-red-600 px-2 py-1 rounded-md">!!! 警报: 宝宝超出安全区 !!!</span>';
+                                warningBox.classList.add('opacity-40', 'alert-flash');
+                                isAlerting = true;
+                                // Simple noise/vibration feedback
+                                if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]); 
+                            }
+                        } else {
+                            if (isAlerting) {
+                                // Stop alert
+                                warningBox.classList.remove('opacity-40', 'alert-flash');
+                                isAlerting = false;
+                            }
+                            // Always update safe status when safe
+                            statusMessage.innerHTML = '<span class="font-semibold text-green-600">状态: 安全。宝宝在围栏内。</span>';
+                        }
+
+
+                    } catch (error) {
+                        console.error("检测循环出错:", error);
+                        statusMessage.innerHTML = '<span class="font-semibold text-red-600">错误: 检测过程停止。</span>';
+                        return; // Stop the loop on critical error
+                    }
+                }
+                
+                // Loop: Request the next frame
+                requestAnimationFrame(detectFrame);
+            }
+            
+            detectFrame(); // Initial call to start the loop
+        }
+
+        // --- Event Listeners and Initialization ---
+        
+        startButton.addEventListener('click', startCamera);
+        
+        // Initial setup: Disable start button until model is ready
+        startButton.disabled = true;
+
+        // Start model loading immediately
+        loadModel();
+
+    </script>
+
+
+</body></html>

@@ -44,6 +44,12 @@ theme = 'PaperMod'
     name = "归档"
     url = "archives"
     weight = 20
+# 新增：电子围栏工具
+  [[menu.main]]
+    identifier = "fence-app"
+    name = "AI电子围栏"
+    url = "/apps/fence/"
+    weight = 30
 
 [[menu.main]]
     identifier = "search"
