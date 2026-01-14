@@ -1,0 +1,47 @@
+name: Deploy Hugo Site to GitHub Pages
+
+on:
+  # 监听 main 分支的 push 动作，如果有提交则触发
+  push:
+    branches:
+      - main  # 如果你的主分支叫 master，请这里改为 master
+
+  # 允许你手动在 GitHub 界面点击触发构建（调试用）
+  workflow_dispatch:
+
+# 设置权限，这是 2024/2025 年后必须的，否则会报错 403
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+    steps:
+      # 1. 拉取代码
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true  # 如果你把主题作为 submodule 添加，这里必须为 true
+          fetch-depth: 0    #以此获取完整的 git 历史，用于生成“最后修改时间”等功能
+
+      # 2. 安装 Hugo 环境
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: 'latest'
+          extended: true  # 大多数现代主题（如 PaperMod）都需要 extended 版本
+
+      # 3. 编译生成静态文件
+      - name: Build
+        run: hugo --minify
+
+      # 4. 部署到 GitHub Pages
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/main' # 再次确认只在 main 分支部署
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }} # GitHub 自动生成的密钥，无需你自己配置
+          publish_dir: ./public  # Hugo 默认生成的静态文件目录
+          # cname: example.com # 如果你买了域名，取消这行注释，填入你的域名
